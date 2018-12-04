@@ -18,19 +18,16 @@ import java.util.ArrayList;
 public class QueryRunner {
 
     
-    public QueryRunner()
+    private static final String APPLICATION_NAME = "Travel Lite";
+ 
+	public QueryRunner()
     {
         this.m_jdbcData = new QueryJDBC();
         m_updateAmount = 0;
         m_queryArray = new ArrayList<>();
         m_error="";
-    
         
-        // TODO - You will need to change the queries below to match your queries.
-        
-        // You will need to put your Project Application in the below variable
-        
-        this.m_projectTeamApplication="CITYELECTION";    // THIS NEEDS TO CHANGE FOR YOUR APPLICATION
+        this.m_projectTeamApplication=APPLICATION_NAME;    // THIS NEEDS TO CHANGE FOR YOUR APPLICATION
         
         // Each row that is added to m_queryArray is a separate query. It does not work on Stored procedure calls.
         // The 'new' Java keyword is a way of initializing the data that will be added to QueryArray. Please do not change
@@ -42,11 +39,41 @@ public class QueryRunner {
         //    IsItActionQuery (e.g. Mark it true if it is, otherwise false)
         //    IsItParameterQuery (e.g.Mark it true if it is, otherwise false)
         
-        m_queryArray.add(new QueryData("Select * from contact", null, null, false, false));   // THIS NEEDS TO CHANGE FOR YOUR APPLICATION
-        m_queryArray.add(new QueryData("Select * from contact where contact_id=?", new String [] {"CONTACT_ID"}, new boolean [] {false},  false, true));        // THIS NEEDS TO CHANGE FOR YOUR APPLICATION
-        m_queryArray.add(new QueryData("Select * from contact where contact_name like ?", new String [] {"CONTACT_NAME"}, new boolean [] {true}, false, true));        // THIS NEEDS TO CHANGE FOR YOUR APPLICATION
+        m_queryArray.add(new QueryData("Select concat(traveler_first_name, ' ', traveler_last_name) as 'Traveler' from traveler;", null, null, false, false)); // Get all travelers
+        m_queryArray.add(new QueryData("Select * from traveler where (traveler_last_name = ?) and (traveler_first_name = ?);", new String [] {"Last Name", "First Name"}, new boolean [] {false, false}, false, true)); // find a traveler by name
+        m_queryArray.add(new QueryData("Select concat(traveler_first_name, ' ', traveler_last_name) as 'Traveler' from flight f "
+        		+ "join connection c on f.flight_id = c.flight_id "
+        		+ "join trip t on c.trip_id = t.trip_id "
+        		+ "join reservation r on t.trip_id = r.trip_id "
+        		+ "join traveler t2 on r.traveler_id = t2.traveler_id "
+        		+ "where f.flight_id = ?;", new String [] {"FLIGHT_NUMBER"}, new boolean[] {false}, false, true)); // Get travelers on a single flight
+        m_queryArray.add(new QueryData("Select date_format(reservation_date_time, '%M %Y') as 'Booking Date', count(*) as '# bookings' "
+        		+ "from reservation r where r.reservation_date_time > cast(? as date) group by date_format(reservation_date_time, '%M %Y');", new String [] {"Since (YYYY-MM-DD"}, new boolean [] {false}, false, true)); // Get number of bookings grouped by month since date.
+        
         m_queryArray.add(new QueryData("insert into contact (contact_id, contact_name, contact_salary) values (?,?,?)",new String [] {"CONTACT_ID", "CONTACT_NAME", "CONTACT_SALARY"}, new boolean [] {false, false, false}, true, true));// THIS NEEDS TO CHANGE FOR YOUR APPLICATION
-                       
+        m_queryArray.add(new QueryData("SELECT CONCAT(traveler_first_name, ' ', " + 
+        		"traveler_last_name) AS 'Traveler', " + 
+        		"DATE_FORMAT(r.reservation_date_time, '%a %b %e %Y') AS 'Booking Date', " + 
+        		"TIME_FORMAT(r.reservation_date_time, '%h:%i %p')    AS 'Booking Time' " + 
+        		"FROM traveler t " + 
+        		"JOIN reservation r on t.traveler_id = r.traveler_id " + 
+        		"WHERE r.reservation_date_time > DATE_SUB(NOW(), INTERVAL ? DAY);", new String [] {"Day Interval"}, new boolean [] {false}, false, true)); // List all travelers who booked a trip since a set time. 
+        m_queryArray.add(new QueryData("SELECT CONCAT(traveler_first_name, ' ', " + 
+        		"traveler_last_name)       AS 'Traveler', " + 
+        		"DATE_FORMAT(card.payment_card_expiration_date, '%m/%y') AS 'Card Expiration Date', " + 
+        		"card.payment_card_number AS 'Card Number', " + 
+        		"t2.payment_card_type_description AS 'Card Type' " + 
+        		"FROM traveler t " + 
+        		"JOIN payment_card card on t.traveler_id = card.customer_id " + 
+        		"JOIN payment_card_type t2 " + 
+        		"on card.payment_card_type_id = t2.payment_card_type_id " + 
+        		"WHERE card.payment_card_expiration_date < DATE_ADD(NOW(), INTERVAL ? DAY);", new String [] {"Day Interval"}, new boolean [] {false}, false, true)); // List all travelers with credit cards expiring within Day Interval
+        m_queryArray.add(new QueryData("Select airport_iata_code as 'IATA Code', airport_name as 'Airport', city_name as 'City', state_name_abbreviation as 'State' "
+        		+ "from airport a "
+        		+ "join city c on a.city_id = c.city_id "
+        		+ "join state s on c.state_id = s.state_id "
+        		+ "where state_name_abbreviation in ? order by state_name_abbreviation, airport_iata_code;", new String [] {"State Abbreviation"}, new boolean [] {false}, false, true)); // list all airports within a states
+        m_queryArray.add(new QueryData("Insert into traveler values (DEFAULT, ?, ?);", new String[] {"First Name", "Last Name"}, new boolean [] {false, false}, true, true)); // add traveler
     }
        
 
