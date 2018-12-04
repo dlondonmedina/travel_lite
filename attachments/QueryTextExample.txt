@@ -1,0 +1,52 @@
+{
+    $query
+    $description
+        List all user accounts
+    $text
+        # List all traveler accounts\n" +
+        select *
+        from traveler
+        order by traveler_id desc;
+    $params
+        null
+    $likeparams
+        null
+    $isAction
+        false
+    $isParam
+        false
+}
+{
+    $query
+    $description
+        List all reservations
+    $text
+        # List all reservations
+        select r.reservation_id                                         as `Res. ID`,
+               t.traveler_id                                            as `Traveler Id`,
+               concat(t.traveler_first_name, ' ', t.traveler_last_name) as Traveler,
+               f.flight_id                                              as `Flight Id`,
+               a.airport_iata_code                                      as Origin,
+               a2.airport_iata_code                                     as Destination,
+               r.reservation_tickets                                    as `# Tickets`,
+               c.class_type                                             as `Travel Class`,
+               concat(date_format(r.reservation_date_time, '%b %e %Y '),
+                      time_format(r.reservation_date_time,
+                                  '%h:%i %p'))                          as `Booking Date`
+        from reservation r
+               join traveler t on r.traveler_id = t.traveler_id
+               join class c on r.class_id = c.class_id
+               join trip t2 on r.reservation_id = t2.reservation_id
+               join flight f on t2.flight_id = f.flight_id
+               join airport a on f.origin_id = a.airport_id
+               join airport a2 on f.destination_id = a2.airport_id
+        order by r.reservation_id desc, r.reservation_date_time desc;
+    $params
+        null
+    $likeparams
+        null
+    $isAction
+        false
+    $isParam
+        false
+}

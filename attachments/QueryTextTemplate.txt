@@ -1,0 +1,46 @@
+{
+    $query (or $procedure)
+    $description            (1 short line)
+        List all rows
+    $text                   (can be multi-line)
+        select *
+        from table;
+    $params                 (comma-separated String list or null, no "", 1 line)
+        paramA,paramB,...
+    $likeparams             (comma-separated boolean list or null, no "",1 line)
+        booleanA,booleanB,...
+    $isAction               (1 boolean value on 1 line)
+        false
+    $isParam                (1 boolean value on 1 line)
+        false
+}
+{
+    $query
+    $description
+
+    $text
+
+    $params
+
+    $likeparams
+
+    $isAction
+
+    $isParam
+
+}
+{
+    $procedure
+    $description
+
+    $text
+
+    $params
+
+    $likeparams
+
+    $isAction
+
+    $isParam
+
+}
